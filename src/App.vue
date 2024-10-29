@@ -19,33 +19,50 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref } from "vue"
 import axios from "axios"
 
-export default {
-  data() {
-    return {
-      categories: [
-        { name: "burgers", label: "Burgers" },
-        { name: "drinks", label: "Drinks" },
-        { name: "desserts", label: "Desserts" },
-      ],
-      selectedCategory: "",
-      items: [],
-    }
-  },
-  methods: {
-    async selectCategory(category) {
-      this.selectedCategory = category
-      const response = await axios.get(
-        `http://localhost:3000/api/menu/${category}`
-      )
-      this.items = response.data
-    },
-    async addToCart(item) {
-      await axios.post("http://localhost:3000/api/cart", { item })
-      alert(`${item.name} added to your cart!`)
-    },
-  },
+// Define types for categories and items
+interface Category {
+  name: string
+  label: string
+}
+
+interface MenuItem {
+  name: string
+  price: number
+}
+
+const categories = ref<Category[]>([
+  { name: "burgers", label: "Burgers" },
+  { name: "drinks", label: "Drinks" },
+  { name: "desserts", label: "Desserts" },
+])
+
+const selectedCategory = ref<string>("")
+const items = ref<MenuItem[]>([])
+
+// Function to select category and fetch items
+async function selectCategory(category: string) {
+  selectedCategory.value = category
+  try {
+    const response = await axios.get(
+      `http://localhost:3000/api/menu/${category}`
+    )
+    items.value = response.data
+  } catch (error) {
+    console.error("Error fetching items:", error)
+  }
+}
+
+// Function to add item to cart
+async function addToCart(item: MenuItem) {
+  try {
+    await axios.post("http://localhost:3000/api/cart", { item })
+    alert(`${item.name} added to your cart!`)
+  } catch (error) {
+    console.error("Error adding item to cart:", error)
+  }
 }
 </script>
